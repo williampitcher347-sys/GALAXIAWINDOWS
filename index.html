@@ -4,155 +4,188 @@
 <meta charset="UTF-8">
 <title>GALAXIA Launcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-html,body{margin:0;height:100%;background:#050510;color:white;font-family:system-ui;overflow:hidden}
-.page{display:none;height:100%}
-.page.active{display:flex}
-button{background:#1e90ff;border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer}
-input{background:#111;border:none;color:white;padding:8px;border-radius:8px}
-header{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-#launcher,#installed,#scanner{flex-direction:column;padding:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px}
-.card{background:#14142a;border-radius:12px;padding:10px;cursor:pointer}
-.card:hover{background:#1a1a35}
-#gamePage{flex-direction:column}
-#bar{background:#0b0b18;height:46px;display:flex;align-items:center;gap:10px;padding:0 10px}
-#gameContainer{flex:1;background:black}
-iframe{width:100%;height:100%;border:none}
-nav{display:flex;gap:10px;margin-bottom:10px}
+body {
+  margin:0;
+  font-family:Segoe UI, Arial;
+  background:radial-gradient(circle at top,#1b2a4a,#05060a);
+  color:#fff;
+  overflow:hidden;
+}
+#app { display:flex; height:100vh; }
+
+aside {
+  width:220px;
+  background:#0a1020;
+  padding:15px;
+}
+aside h1 { font-size:20px; }
+aside button {
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  background:#1c2a4a;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+main {
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:15px;
+}
+
+.card {
+  background:#101830;
+  border-radius:10px;
+  padding:10px;
+  cursor:pointer;
+  transition:.2s;
+}
+.card:hover { transform:scale(1.05); background:#182450; }
+
+.card img {
+  width:100%;
+  height:100px;
+  object-fit:cover;
+  border-radius:6px;
+}
+
+.card h3 { margin:8px 0 4px; font-size:15px; }
+.card p { font-size:12px; opacity:.7 }
+
+#player {
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+  z-index:10;
+}
+
+#player iframe {
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+input[type=file] { display:none; }
+
+.fullbtn {
+  position:absolute;
+  top:10px;
+  right:10px;
+  padding:10px;
+  z-index:20;
+}
 </style>
 </head>
 
 <body>
-
-<!-- ========== LAUNCHER ========== -->
-<div id="launcher" class="page active">
-  <header>
-    <h2>🌌 GALAXIA</h2>
-  </header>
-  <nav>
+<div id="app">
+  <aside>
+    <h1>🌌 GALAXIA</h1>
+    <button onclick="show('library')">Library</button>
     <button onclick="show('installed')">Installed</button>
-    <button onclick="show('scanner')">Game Scanner</button>
-    <button onclick="installGame()">Install Game</button>
-  </nav>
-  <p>Select a section above.</p>
+    <button onclick="install()">Install Game</button>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <h2 id="title">Library</h2>
+      <input id="search" placeholder="Search games..." oninput="render()">
+    </div>
+
+    <div id="content" class="grid"></div>
+  </main>
 </div>
 
-<!-- ========== INSTALLED ========== -->
-<div id="installed" class="page">
-  <header>
-    <button onclick="show('launcher')">← Back</button>
-    <h3>Installed Games</h3>
-  </header>
-  <div id="installedGrid" class="grid"></div>
+<div id="player">
+  <button class="fullbtn" onclick="toggleFS()">⛶ Fullscreen</button>
+  <iframe id="gameFrame"></iframe>
 </div>
 
-<!-- ========== GAME SCANNER V1 ========== -->
-<div id="scanner" class="page">
-  <header>
-    <button onclick="show('launcher')">← Back</button>
-    <h3>Game Scanner v1</h3>
-  </header>
-  <input id="scanInput" placeholder="Search FPS / Unity / Shooter">
-  <div id="scanResults" class="grid"></div>
-</div>
-
-<!-- ========== GAME PAGE ========== -->
-<div id="gamePage" class="page">
-  <div id="bar">
-    <button onclick="exitGame()">← Exit</button>
-    <button onclick="fullscreen()">Fullscreen</button>
-  </div>
-  <div id="gameContainer"></div>
-</div>
+<input type="file" id="folder" webkitdirectory>
 
 <script>
-/* ===== NAV ===== */
-const pages=["launcher","installed","scanner","gamePage"];
-function show(id){
-  pages.forEach(p=>document.getElementById(p).classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+let games = JSON.parse(localStorage.getItem("galaxia_games")||"[]");
+let view="library";
+
+function show(v){ view=v; document.getElementById("title").innerText=v; render(); }
+
+function render(){
+  const c=document.getElementById("content");
+  c.innerHTML="";
+  const q=document.getElementById("search").value.toLowerCase();
+  games.filter(g=>g.name.toLowerCase().includes(q)).forEach(g=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`
+      <img src="${g.icon||'https://picsum.photos/400/200?random='+Math.random()}">
+      <h3>${g.name}</h3>
+      <p>${g.type}</p>
+    `;
+    d.onclick=()=>play(g);
+    c.appendChild(d);
+  });
 }
 
-/* ===== STORAGE ===== */
-let installedGames=JSON.parse(localStorage.getItem("galaxia_games")||"[]");
-
-function save(){localStorage.setItem("galaxia_games",JSON.stringify(installedGames));}
-
-/* ===== INSTALL REAL WEB GAME ===== */
-function installGame(){
-  const input=document.createElement("input");
-  input.type="file";
-  input.webkitdirectory=true;
-  input.onchange=()=>{
-    const files=[...input.files];
-    const entry=files.find(f=>f.name==="index.html");
-    if(!entry)return alert("Folder must contain index.html");
+function install(){
+  const f=document.getElementById("folder");
+  f.onchange=()=>{
+    const files=[...f.files];
+    let entry=files.find(x=>x.name==="index.html");
+    if(!entry){ alert("No index.html found"); return; }
     const url=URL.createObjectURL(entry);
-    installedGames.push({name:entry.webkitRelativePath.split("/")[0],url});
-    save();
-    renderInstalled();
-    show("installed");
+    games.push({
+      name:f.files[0].webkitRelativePath.split("/")[0],
+      url:url,
+      type:"HTML",
+      played:0
+    });
+    localStorage.setItem("galaxia_games",JSON.stringify(games));
+    render();
   };
-  input.click();
+  f.click();
 }
 
-/* ===== INSTALLED ===== */
-function renderInstalled(){
-  const grid=document.getElementById("installedGrid");
-  grid.innerHTML="";
-  installedGames.forEach(g=>{
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=g.name;
-    c.onclick=()=>launch(g.url);
-    grid.appendChild(c);
-  });
+function play(g){
+  document.getElementById("player").style.display="block";
+  const iframe=document.getElementById("gameFrame");
+  iframe.src=g.url;
+  g.played++;
+  localStorage.setItem("galaxia_games",JSON.stringify(games));
 }
-renderInstalled();
 
-/* ===== SCANNER V1 (CURATED REAL GAMES) ===== */
-const catalog=[
-  {name:"Krunker",url:"https://krunker.io"},
-  {name:"Shell Shockers",url:"https://shellshock.io"},
-  {name:"ThreeJS FPS",url:"https://mrdoob.github.io/three.js/examples/games_fps.html"},
-  {name:"Unity FPS Sample",url:"https://unity-webgl-builds.github.io/fps-sample/"}
-];
-
-document.getElementById("scanInput").oninput=e=>{
-  const q=e.target.value.toLowerCase();
-  const res=document.getElementById("scanResults");
-  res.innerHTML="";
-  catalog.filter(g=>g.name.toLowerCase().includes(q)).forEach(g=>{
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=g.name;
-    c.onclick=()=>launch(g.url);
-    res.appendChild(c);
-  });
-};
-
-/* ===== GAME ===== */
-const gameContainer=document.getElementById("gameContainer");
-function launch(url){
-  show("gamePage");
-  gameContainer.innerHTML=`<iframe src="${url}" allow="fullscreen; gamepad"></iframe>`;
-}
-function exitGame(){
-  if(document.fullscreenElement)document.exitFullscreen();
-  gameContainer.innerHTML="";
-  show("launcher");
-}
-function fullscreen(){
-  if(!document.fullscreenElement)gameContainer.requestFullscreen();
+function toggleFS(){
+  const p=document.getElementById("player");
+  if(!document.fullscreenElement) p.requestFullscreen();
   else document.exitFullscreen();
 }
 
-/* ===== CONTROLLER ===== */
-window.addEventListener("gamepadconnected",e=>{
-  console.log("Controller:",e.gamepad.id);
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    document.getElementById("player").style.display="none";
+    document.exitFullscreen();
+  }
 });
-</script>
 
+render();
+</script>
 </body>
 </html>
