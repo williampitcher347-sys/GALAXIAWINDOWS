@@ -2,210 +2,26 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Web Windows OS v3</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI}
-body{background:linear-gradient(135deg,#1e90ff,#0a2a66);height:100vh;overflow:hidden}
-#desktop{position:absolute;inset:0}
-.icon{
-  width:80px;text-align:center;color:white;
-  position:absolute;cursor:pointer
-}
-.icon img{width:48px}
-.window{
-  position:absolute;background:#111;color:white;
-  border-radius:6px;box-shadow:0 0 20px #000;
-  resize:both;overflow:hidden
-}
-.titlebar{
-  background:#0078d7;padding:6px;cursor:move;
-  display:flex;justify-content:space-between
-}
-.content{height:calc(100% - 30px);padding:6px;overflow:auto}
-#taskbar{
-  position:absolute;bottom:0;width:100%;height:45px;
-  background:#111;display:flex;align-items:center;padding:6px
-}
-#startBtn{background:#0078d7;color:white;border:none;padding:6px}
-</style>
+<title>Web OS</title>
+<link rel="stylesheet" href="css/login.css">
+<link rel="stylesheet" href="css/desktop.css">
 </head>
 <body>
 
-<div id="desktop"></div>
-<div id="taskbar">
-  <button id="startBtn">Start</button>
+<div id="loginScreen">
+  <h1>Web OS</h1>
+  <input id="username" placeholder="Username">
+  <button onclick="login()">Login</button>
 </div>
 
-<input type="file" id="fileInput" multiple hidden>
+<div id="desktop" hidden>
+  <div id="taskbar">
+    <div id="apps"></div>
+    <div id="clock"></div>
+  </div>
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script>
-let db,files=[],icons=[],windows=[]
-const desktop=document.getElementById("desktop")
-
-/* ===== DB ===== */
-indexedDB.open("WebOS",1).onupgradeneeded=e=>{
-  db=e.target.result
-  db.createObjectStore("files",{keyPath:"name"})
-  db.createObjectStore("state",{keyPath:"key"})
-}
-indexedDB.open("WebOS",1).onsuccess=e=>{
-  db=e.target.result
-  loadFiles()
-  loadState()
-}
-
-/* ===== STATE ===== */
-function saveState(key,val){
-  db.transaction("state","readwrite")
-    .objectStore("state").put({key,val})
-}
-function loadState(){
-  db.transaction("state","readonly")
-    .objectStore("state").getAll().onsuccess=e=>{
-      e.target.result.forEach(s=>{
-        if(s.key==="icons") icons=s.val
-        if(s.key==="windows") restoreWindows(s.val)
-      })
-      renderIcons()
-    }
-}
-
-/* ===== FILES ===== */
-function loadFiles(){
-  db.transaction("files","readonly")
-    .objectStore("files").getAll().onsuccess=e=>{
-      files=e.target.result
-      renderIcons()
-    }
-}
-function saveFile(f){
-  db.transaction("files","readwrite")
-    .objectStore("files").put(f)
-}
-
-/* ===== ICONS ===== */
-function renderIcons(){
-  desktop.innerHTML=""
-  files.forEach((f,i)=>{
-    let ic=icons.find(x=>x.name===f.name)
-    if(!ic){ic={name:f.name,x:20,y:20+i*90};icons.push(ic)}
-    const d=document.createElement("div")
-    d.className="icon"
-    d.style.left=ic.x+"px"
-    d.style.top=ic.y+"px"
-    d.innerHTML=`<img src="https://cdn-icons-png.flaticon.com/512/716/716784.png"><div>${f.name}</div>`
-    d.ondblclick=()=>openFile(f)
-    dragIcon(d,ic)
-    desktop.appendChild(d)
-  })
-  saveState("icons",icons)
-}
-function dragIcon(el,ic){
-  el.onmousedown=e=>{
-    document.onmousemove=ev=>{
-      ic.x=ev.clientX-40
-      ic.y=ev.clientY-40
-      el.style.left=ic.x+"px"
-      el.style.top=ic.y+"px"
-    }
-    document.onmouseup=()=>document.onmousemove=null
-  }
-}
-
-/* ===== WINDOWS ===== */
-function createWindow(title,x=120,y=80,w=500,h=350){
-  const win=document.createElement("div")
-  win.className="window"
-  Object.assign(win.style,{left:x+"px",top:y+"px",width:w+"px",height:h+"px"})
-  const bar=document.createElement("div")
-  bar.className="titlebar"
-  bar.innerHTML=`<span>${title}</span><button>X</button>`
-  bar.querySelector("button").onclick=()=>win.remove()
-  const c=document.createElement("div")
-  c.className="content"
-  win.append(bar,c)
-  dragWindow(win,bar)
-  desktop.appendChild(win)
-  windows.push({title,x,y,w,h})
-  saveState("windows",windows)
-  return c
-}
-function restoreWindows(wins){
-  wins.forEach(w=>createWindow(w.title,w.x,w.y,w.w,w.h))
-}
-function dragWindow(w,b){
-  let x,y
-  b.onmousedown=e=>{
-    x=e.clientX;y=e.clientY
-    document.onmousemove=ev=>{
-      w.style.left=w.offsetLeft-(x-ev.clientX)+"px"
-      w.style.top=w.offsetTop-(y-ev.clientY)+"px"
-      x=ev.clientX;y=ev.clientY
-    }
-    document.onmouseup=()=>document.onmousemove=null
-  }
-}
-
-/* ===== FILE OPEN ===== */
-function openFile(f){
-  const c=createWindow(f.name)
-  if(f.type.includes("html")){
-    const i=document.createElement("iframe")
-    i.srcdoc=atob(f.data.split(",")[1])
-    i.style.width="100%";i.style.height="100%"
-    c.appendChild(i)
-  } else c.textContent="Unsupported"
-}
-
-/* ===== TERMINAL ===== */
-function openTerminal(){
-  const c=createWindow("Terminal")
-  const out=document.createElement("pre")
-  const input=document.createElement("input")
-  input.style.width="100%"
-  input.onkeydown=e=>{
-    if(e.key==="Enter"){
-      const cmd=input.value
-      out.textContent+=`\n> ${cmd}`
-      if(cmd==="ls") out.textContent+="\n"+files.map(f=>f.name).join("\n")
-      if(cmd.startsWith("open ")) openFile(files.find(f=>f.name===cmd.split(" ")[1]))
-      if(cmd==="clear") out.textContent=""
-      input.value=""
-    }
-  }
-  c.append(out,input)
-}
-
-/* ===== START ===== */
-startBtn.onclick=()=>{
-  const m=createWindow("Start")
-  m.innerHTML=`<button onclick="fileInput.click()">Upload</button>
-               <button onclick="openTerminal()">Terminal</button>`
-}
-
-/* ===== UPLOAD + ZIP ===== */
-fileInput.onchange=()=>{
-  [...fileInput.files].forEach(f=>{
-    if(f.name.endsWith(".zip")){
-      JSZip.loadAsync(f).then(z=>{
-        Object.keys(z.files).forEach(n=>{
-          z.files[n].async("base64").then(d=>{
-            saveFile({name:n,type:"text/html",data:"data:text/html;base64,"+d})
-            loadFiles()
-          })
-        })
-      })
-    } else {
-      const r=new FileReader()
-      r.onload=()=>{
-        saveFile({name:f.name,type:f.type,data:r.result})
-        loadFiles()
-      }
-      r.readAsDataURL(f)
-    }
-  })
-}
-</script>
+<script src="js/session.js"></script>
+<script src="js/boot.js"></script>
 </body>
 </html>
