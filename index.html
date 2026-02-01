@@ -2,68 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Web OS</title>
+<title>Web Cloud Launcher</title>
 
 <style>
 html, body {
   margin: 0;
   height: 100%;
-  font-family: Segoe UI, sans-serif;
   background: radial-gradient(circle at top, #1b1f3b, #000);
   color: white;
+  font-family: Segoe UI, sans-serif;
   overflow: hidden;
-}
-
-/* LOGIN */
-#loginScreen {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#loginBox {
-  background: rgba(0,0,0,0.6);
-  padding: 30px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-input {
-  padding: 10px;
-  width: 220px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: none;
-}
-
-button {
-  margin-top: 12px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
 }
 
 /* DESKTOP */
 #desktop {
-  display: none;
   height: 100%;
-}
-
-#iconArea {
   padding: 20px;
-}
-
-.icon {
-  width: 90px;
-  text-align: center;
-  cursor: pointer;
-}
-
-.icon img {
-  width: 64px;
 }
 
 /* TASKBAR */
@@ -72,76 +26,115 @@ button {
   bottom: 0;
   width: 100%;
   height: 48px;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,.85);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 12px;
 }
 
-#clock {
-  font-size: 14px;
+/* LAUNCHER WINDOW */
+#launcher {
+  width: 900px;
+  height: 500px;
+  background: rgba(20,20,40,.95);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* GAME GRID */
+#games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 160px);
+  gap: 16px;
+}
+
+.game {
+  background: rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: .2s;
+}
+
+.game:hover {
+  background: rgba(255,255,255,.18);
+}
+
+.game img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+/* PLAYER WINDOW */
+#player {
+  position: absolute;
+  inset: 0;
+  background: black;
+  display: none;
+}
+
+#player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  padding: 8px 12px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-  <div id="loginBox">
-    <h1>Web OS</h1>
-    <input id="username" placeholder="Username">
-    <br>
-    <button onclick="login()">Login</button>
-  </div>
-</div>
-
-<!-- DESKTOP -->
 <div id="desktop">
-  <div id="iconArea">
-    <div class="icon" onclick="launchXbox()">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Xbox_one_logo.svg">
-      <div>Xbox Cloud</div>
+  <div id="launcher">
+    <h2>Cloud Game Launcher</h2>
+
+    <div id="games">
+      <div class="game" onclick="launchGame('fortnite')">
+        <img src="https://cdn2.unrealengine.com/fortnite-icon-512x512-0a3c4a8f6b6c.png">
+        <div>Fortnite (Cloud)</div>
+      </div>
+
+      <div class="game" onclick="launchGame('emulator')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Gamepad.svg">
+        <div>Retro Cloud</div>
+      </div>
     </div>
   </div>
-
-  <div id="taskbar">
-    <div>Web OS</div>
-    <div id="clock"></div>
-  </div>
 </div>
 
+<div id="player">
+  <button id="closeBtn" onclick="closePlayer()">Exit Game</button>
+  <iframe id="gameFrame"></iframe>
+</div>
+
+<div id="taskbar">Web Cloud OS</div>
+
 <script>
-/* LOGIN SYSTEM */
-function login() {
-  const name = username.value.trim();
-  if (!name) return alert("Enter a username");
-  localStorage.setItem("webos_user", name);
-  startSession();
+function launchGame(type) {
+  player.style.display = "block";
+
+  if (type === "fortnite") {
+    // Fortnite is the ONLY Xbox Cloud game that works publicly
+    gameFrame.src = "https://www.xbox.com/play/embed/fortnite";
+  }
+
+  if (type === "emulator") {
+    // Example cloud-playable platform
+    gameFrame.src = "https://www.retrogames.cc/embed/16898-super-mario-world-usa.html";
+  }
 }
 
-function startSession() {
-  loginScreen.style.display = "none";
-  desktop.style.display = "block";
-}
-
-if (localStorage.getItem("webos_user")) {
-  startSession();
-}
-
-/* CLOCK */
-setInterval(() => {
-  clock.textContent = new Date().toLocaleTimeString();
-}, 1000);
-
-/* XBOX CLOUD GAMING */
-function launchXbox() {
-  window.open(
-    "https://www.xbox.com/play",
-    "xboxCloud",
-    "width=1280,height=720"
-  );
+function closePlayer() {
+  gameFrame.src = "";
+  player.style.display = "none";
 }
 </script>
 
