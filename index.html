@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>GALAXIA FPS LAUNCHER</title>
+
 <style>
 html, body {
   margin: 0;
@@ -23,8 +24,8 @@ header {
   height: calc(100% - 60px);
 }
 #sidebar {
-  width: 280px;
-  background: rgba(0,0,0,0.65);
+  width: 300px;
+  background: rgba(0,0,0,0.7);
   padding: 12px;
   flex-shrink: 0;
 }
@@ -73,18 +74,19 @@ button {
 }
 </style>
 </head>
+
 <body>
 
 <header>🌌 GALAXIA FPS LAUNCHER</header>
 
 <div id="container">
   <div id="sidebar">
-    <div class="game-btn" onclick="launch('krunker')">Krunker.io</div>
-    <div class="game-btn" onclick="launch('warbrokers')">War Brokers</div>
-    <div class="game-btn" onclick="launch('miniroyale')">Mini Royale</div>
-    <div class="game-btn" onclick="launch('plasma')">Plasma Forks</div>
-    <div class="game-btn" onclick="launch('bananabread')">BananaBread</div>
-    <div class="game-btn" onclick="launch('fpsreflex')">FPS Reflex Game</div>
+    <div class="game-btn" onclick="launchGame('krunker')">Krunker.io</div>
+    <div class="game-btn" onclick="launchGame('warbrokers')">War Brokers</div>
+    <div class="game-btn" onclick="launchGame('miniroyale')">Mini Royale: Nations</div>
+    <div class="game-btn" onclick="launchGame('bulletforce')">Bullet Force</div>
+    <div class="game-btn" onclick="launchGame('warattack')">War Attack</div>
+    <div class="game-btn" onclick="launchGame('shellshockers')">Shell Shockers</div>
   </div>
 
   <div id="player">
@@ -97,7 +99,7 @@ button {
 </div>
 
 <script>
-function launch(id) {
+function launchGame(id) {
   let url = "";
   if (id === "krunker") {
     url = "https://krunker.io/";
@@ -108,14 +110,14 @@ function launch(id) {
   if (id === "miniroyale") {
     url = "https://miniroyale.io/";
   }
-  if (id === "plasma") {
-    url = "https://astronoit.github.io/FPS-GAME/";  
+  if (id === "bulletforce") {
+    url = "https://www.fpswebgames.com/bullet-force"; // example aggregator link:contentReference[oaicite:7]{index=7}
   }
-  if (id === "bananabread") {
-    url = "https://gamearians.github.io/games/bananabread/";
+  if (id === "warattack") {
+    url = "https://www.gaming-style.com/WarAttack/index.php"; // official web build:contentReference[oaicite:8]{index=8}
   }
-  if (id === "fpsreflex") {
-    url = "https://yagizayer.github.io/Fps_Reflex_Game_v03/";
+  if (id === "shellshockers") {
+    url = "https://krunker.io/shellshockers"; // some portals host it (may need custom hosting):contentReference[oaicite:9]{index=9}
   }
 
   nowPlaying.textContent = id.replace(/([A-Z])/g, " $1").trim();
