@@ -2,106 +2,140 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GALAXIA LAUNCHER</title>
+<title>GALAXIA FPS LAUNCHER</title>
 
 <style>
+* { box-sizing: border-box; }
+
 html, body {
   margin: 0;
   height: 100%;
+  font-family: Segoe UI, sans-serif;
   background: radial-gradient(circle at top, #0b0f2b, #000);
   color: white;
-  font-family: Segoe UI, sans-serif;
+  overflow: hidden;
 }
 
+/* HEADER */
 header {
-  padding: 20px;
-  font-size: 28px;
-  font-weight: bold;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: rgba(0,0,0,0.4);
 }
 
-#main {
-  padding: 20px;
+/* MAIN LAYOUT */
+#container {
+  display: flex;
+  height: calc(100% - 64px);
 }
 
-#games {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+/* SIDEBAR */
+#sidebar {
+  width: 260px;
+  background: rgba(0,0,0,0.55);
+  padding: 16px;
 }
 
-.game {
+.game-btn {
   background: rgba(255,255,255,0.08);
-  border-radius: 16px;
   padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.game:hover {
-  background: rgba(255,255,255,0.18);
-  transform: translateY(-4px);
+.game-btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateX(4px);
 }
 
-.game img {
+/* PLAYER */
+#player {
+  flex: 1;
+  background: black;
+  position: relative;
+}
+
+#player iframe {
   width: 100%;
-  border-radius: 12px;
+  height: 100%;
+  border: none;
 }
 
-.game-title {
-  margin-top: 10px;
-  font-size: 16px;
+/* TOP BAR */
+#playerBar {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 44px;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  z-index: 10;
 }
 
 button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
   background: #4b7cff;
   color: white;
-  font-size: 14px;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<header>🌌 GALAXIA LAUNCHER</header>
+<header>🌌 GALAXIA — FPS LAUNCHER</header>
 
-<div id="main">
-  <h2>Library</h2>
+<div id="container">
 
-  <div id="games">
-
-    <div class="game">
-      <img src="https://cdn2.unrealengine.com/fortnite-icon-512x512-0a3c4a8f6b6c.png">
-      <div class="game-title">Fortnite (Cloud)</div>
-      <button onclick="launchFortnite()">Launch</button>
-    </div>
-
-    <div class="game">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Gamepad.svg">
-      <div class="game-title">Retro Cloud Games</div>
-      <button onclick="launchRetro()">Launch</button>
-    </div>
-
+  <div id="sidebar">
+    <div class="game-btn" onclick="launch('krunker')">Krunker.io</div>
+    <div class="game-btn" onclick="launch('warbrokers')">War Brokers</div>
+    <div class="game-btn" onclick="launch('miniroyale')">Mini Royale</div>
   </div>
+
+  <div id="player">
+    <div id="playerBar">
+      <div id="nowPlaying">Select a game</div>
+      <button onclick="stopGame()">Exit</button>
+    </div>
+    <iframe id="gameFrame"></iframe>
+  </div>
+
 </div>
 
 <script>
-function launchFortnite() {
-  window.open(
-    "https://www.xbox.com/play",
-    "_blank"
-  );
+function launch(game) {
+  if (game === "krunker") {
+    nowPlaying.textContent = "Krunker.io";
+    gameFrame.src = "https://krunker.io/";
+  }
+
+  if (game === "warbrokers") {
+    nowPlaying.textContent = "War Brokers";
+    gameFrame.src = "https://warbrokers.io/game/";
+  }
+
+  if (game === "miniroyale") {
+    nowPlaying.textContent = "Mini Royale: Nations";
+    gameFrame.src = "https://miniroyale.io/";
+  }
 }
 
-function launchRetro() {
-  window.open(
-    "https://www.retrogames.cc/",
-    "_blank"
-  );
+function stopGame() {
+  gameFrame.src = "";
+  nowPlaying.textContent = "Select a game";
 }
 </script>
 
