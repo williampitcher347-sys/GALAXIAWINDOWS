@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#050814">
 
-<!-- PWA -->
+<!-- PWA Manifest -->
 <link rel="manifest" href="data:application/json,{
   &quot;name&quot;:&quot;GALAXIA Launcher&quot;,
   &quot;short_name&quot;:&quot;GALAXIA&quot;,
@@ -16,21 +16,90 @@
 }">
 
 <style>
-body{margin:0;background:#050814;color:#fff;font-family:Segoe UI;overflow:hidden}
-header{display:flex;gap:10px;padding:10px;background:#0b1026;align-items:center}
-header h1{font-size:18px;margin:0}
+body{
+  margin:0;
+  background:#050814;
+  color:white;
+  font-family:Segoe UI,Arial;
+  height:100vh;
+  overflow:hidden;
+}
+header{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  background:#0b1026;
+  align-items:center;
+}
+header h1{margin:0;font-size:18px}
 input{flex:1;padding:8px;border-radius:6px;border:none}
-button{background:#1a3cff;border:none;color:white;padding:8px 12px;border-radius:6px;cursor:pointer}
-nav{display:flex;gap:8px;padding:8px;background:#090f2a}
-nav button{background:#111}
-#drop{margin:10px;padding:30px;border:2px dashed #4af;border-radius:12px;text-align:center;color:#8cf}
-#library{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;padding:14px}
-.card{background:#0c1230;border-radius:12px;padding:10px;cursor:pointer;transition:.2s}
-.card:hover{transform:scale(1.05);box-shadow:0 0 20px #4af}
-.thumb{height:90px;border-radius:8px;background:#111;display:flex;align-items:center;justify-content:center;font-size:12px;color:#6cf}
-#player{position:fixed;inset:0;background:black;display:none;z-index:5}
-#player iframe{width:100%;height:100%;border:none}
-#exit{position:absolute;top:10px;right:10px;z-index:6;padding:10px;background:red;border:none;color:white}
+button{padding:8px 12px;border-radius:6px;border:none;cursor:pointer}
+nav{
+  display:flex;
+  gap:8px;
+  padding:8px;
+  background:#090f2a;
+  flex-wrap:wrap;
+}
+nav button{background:#111;color:white}
+#drop{
+  margin:10px;
+  padding:25px;
+  border:2px dashed #4af;
+  border-radius:12px;
+  text-align:center;
+  color:#8cf;
+}
+#library{
+  padding:14px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:14px;
+  overflow-y:auto;
+  height:calc(100vh - 200px);
+}
+.card{
+  background:#0c1230;
+  border-radius:12px;
+  padding:10px;
+  cursor:pointer;
+  transition:.2s;
+}
+.card:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 20px #4af;
+}
+.thumb{
+  height:100px;
+  border-radius:8px;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  color:#6cf;
+  margin-bottom:6px;
+}
+#player{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+  z-index:10;
+}
+#player iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+#exit{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:11;
+  background:red;
+  color:white;
+}
 small{color:#aaa}
 </style>
 </head>
@@ -39,7 +108,10 @@ small{color:#aaa}
 <header>
   <h1>GALAXIA</h1>
   <input id="search" placeholder="Search games">
-  <button id="installBtn" hidden>Install</button>
+  <button id="installBtn" hidden>Install App</button>
+  <button onclick="exportGames()">Export</button>
+  <input type="file" id="importFile" hidden>
+  <button onclick="importFile.click()">Import</button>
 </header>
 
 <nav>
@@ -62,34 +134,32 @@ small{color:#aaa}
 </div>
 
 <script>
-/* ================= DATA ================= */
 let filter="all";
 let installed=JSON.parse(localStorage.getItem("galaxia_installed")||"[]");
 
-/* ===== GameScanner v4.0 (Curated, SAFE) ===== */
+/* ================= GAME SCANNER 4.5 ================= */
 const scanner=[
  {name:"Shell Shockers",url:"https://shellshock.io",type:"web",fps:true},
  {name:"Deadshot.io",url:"https://deadshot.io",type:"web",fps:true},
  {name:"Ev.io",url:"https://ev.io",type:"web",fps:true},
  {name:"Krunker",url:"https://krunker.io",type:"web",fps:true},
  {name:"HexGL",url:"https://hexgl.bkcore.com",type:"web"},
+ {name:"Voxel Shooter",url:"https://threejs.org/examples/webgl_geometry_minecraft.html",type:"web",fps:true},
  {name:"Babylon FPS Demo",url:"https://playground.babylonjs.com/#2FAJ2",type:"web",fps:true},
  {name:"Unity FPS Sample",url:"https://webglsamples.org/fps/",type:"unity",fps:true},
  {name:"PlayCanvas Shooter",url:"https://playcanv.as/p/2OlkUaxF/",type:"unity",fps:true},
+ {name:"Unity Car Demo",url:"https://webglsamples.org/car/",type:"unity"}
 ];
-
-/* pad to 30+ */
-while(scanner.length<30){
-  let g=scanner[scanner.length%8];
-  scanner.push({...g,name:g.name+"+"});
+while(scanner.length<45){
+  let g=scanner[scanner.length%9];
+  scanner.push({...g,name:g.name+" +"});
 }
 
 const lib=document.getElementById("library");
 const frame=document.querySelector("iframe");
 const player=document.getElementById("player");
 
-function save(){localStorage.setItem("galaxia_installed",JSON.stringify(installed));}
-
+/* ================= RENDER ================= */
 function render(){
   lib.innerHTML="";
   const q=search.value.toLowerCase();
@@ -109,7 +179,7 @@ function render(){
     c.innerHTML=`
       <div class="thumb">${g.type.toUpperCase()}</div>
       <b>${g.name}</b><br>
-      <small>${g.played?Math.floor(g.played/60)+" min":"Click to Play"}</small>
+      <small>${g.played?Math.floor(g.played/60)+" min played":"Click to Play"}</small>
     `;
     c.onclick=()=>launch(g);
     lib.appendChild(c);
@@ -119,7 +189,6 @@ render();
 
 /* ================= PLAY ================= */
 function launch(g){
-  g.last=Date.now();
   frame.src=g.url;
   player.style.display="block";
   setTimeout(()=>frame.requestFullscreen?.(),300);
@@ -131,43 +200,58 @@ exit.onclick=()=>{
   player.style.display="none";
 };
 
-/* ================= INSTALLER ================= */
+/* ================= INSTALLER (SMART UNITY) ================= */
 drop.ondragover=e=>e.preventDefault();
 drop.ondrop=e=>{
   e.preventDefault();
   const files=[...e.dataTransfer.files];
   let html=files.find(f=>f.name==="index.html");
-  let unity=files.find(f=>f.name.endsWith(".loader.js"));
-  if(!html&&!unity){alert("No playable game found");return;}
-  const f=html||unity;
+  let loader=files.find(f=>f.name.endsWith(".loader.js"));
+
+  if(!html && !loader){
+    alert("No valid HTML or Unity WebGL game found.");
+    return;
+  }
+
+  const entry=html||loader;
   installed.push({
-    name:f.webkitRelativePath.split("/")[0],
-    url:URL.createObjectURL(f),
-    type:unity?"unity":"web",
+    name:entry.webkitRelativePath.split("/")[0],
+    url:URL.createObjectURL(entry),
+    type:loader?"unity":"web",
     fps:true,
     played:0
   });
-  save();render();
+
+  localStorage.setItem("galaxia_installed",JSON.stringify(installed));
+  render();
 };
 
-/* ================= PLAYTIME ================= */
-setInterval(()=>{
-  if(player.style.display==="block"){
-    let g=[...scanner,...installed].find(x=>x.url===frame.src);
-    if(g){g.played=(g.played||0)+1;}
-  }
-},1000);
+/* ================= EXPORT / IMPORT ================= */
+function exportGames(){
+  const blob=new Blob([JSON.stringify(installed)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="galaxia-games.json";
+  a.click();
+}
+importFile.onchange=e=>{
+  const r=new FileReader();
+  r.onload=()=>{
+    installed=JSON.parse(r.result);
+    localStorage.setItem("galaxia_installed",JSON.stringify(installed));
+    render();
+  };
+  r.readAsText(e.target.files[0]);
+};
 
 /* ================= PWA INSTALL ================= */
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt',e=>{
+window.addEventListener("beforeinstallprompt",e=>{
   e.preventDefault();
   deferredPrompt=e;
   installBtn.hidden=false;
 });
-installBtn.onclick=()=>{
-  deferredPrompt.prompt();
-};
+installBtn.onclick=()=>deferredPrompt.prompt();
 </script>
 </body>
 </html>
