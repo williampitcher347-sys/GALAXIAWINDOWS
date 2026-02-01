@@ -1,172 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>GALAXIA Launcher</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-/* ---------- BASE ---------- */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: #050510;
-  color: white;
-  font-family: system-ui, Segoe UI, Arial;
-  overflow: hidden;
-}
-
-/* ---------- PAGES ---------- */
-.page {
-  display: none;
-  width: 100%;
-  height: 100%;
-}
-
-.page.active {
-  display: flex;
-}
-
-/* ---------- LAUNCHER ---------- */
-#launcher {
-  flex-direction: column;
-  padding: 30px;
-}
-
-h1 {
-  margin: 0 0 20px;
-  font-weight: 600;
-}
-
-#gameGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-}
-
-.gameCard {
-  background: linear-gradient(145deg, #151530, #0b0b1a);
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
-  transition: transform .15s, box-shadow .15s;
-}
-
-.gameCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.5);
-}
-
-.thumb {
-  height: 100px;
-  border-radius: 10px;
-  background: #222;
-  margin-bottom: 10px;
-}
-
-.gameTitle {
-  font-size: 14px;
-  text-align: center;
-}
-
-/* ---------- GAME PAGE ---------- */
-#gamePage {
-  flex-direction: column;
-}
-
-#gameHeader {
-  height: 48px;
-  background: #0b0b18;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  gap: 10px;
-}
-
-button {
-  background: #1e90ff;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-button.secondary {
-  background: #333;
-}
-
-#gameContainer {
-  flex: 1;
-  background: black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* placeholder */
-#placeholder {
-  opacity: 0.6;
-  font-size: 18px;
-}
+html,body{margin:0;height:100%;background:#050510;color:white;font-family:system-ui;overflow:hidden}
+.page{display:none;height:100%}
+.page.active{display:flex}
+button{background:#1e90ff;border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer}
+input{background:#111;border:none;color:white;padding:8px;border-radius:8px}
+header{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+#launcher,#installed,#scanner{flex-direction:column;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:15px}
+.card{background:#14142a;border-radius:12px;padding:10px;cursor:pointer}
+.card:hover{background:#1a1a35}
+#gamePage{flex-direction:column}
+#bar{background:#0b0b18;height:46px;display:flex;align-items:center;gap:10px;padding:0 10px}
+#gameContainer{flex:1;background:black}
+iframe{width:100%;height:100%;border:none}
+nav{display:flex;gap:10px;margin-bottom:10px}
 </style>
 </head>
 
 <body>
 
-<!-- ================= LAUNCHER ================= -->
+<!-- ========== LAUNCHER ========== -->
 <div id="launcher" class="page active">
-  <h1>🌌 GALAXIA Launcher</h1>
-
-  <div id="gameGrid">
-    <!-- Placeholder card -->
-    <div class="gameCard" onclick="openGame()">
-      <div class="thumb"></div>
-      <div class="gameTitle">Sample Game</div>
-    </div>
-  </div>
+  <header>
+    <h2>🌌 GALAXIA</h2>
+  </header>
+  <nav>
+    <button onclick="show('installed')">Installed</button>
+    <button onclick="show('scanner')">Game Scanner</button>
+    <button onclick="installGame()">Install Game</button>
+  </nav>
+  <p>Select a section above.</p>
 </div>
 
-<!-- ================= GAME PAGE ================= -->
-<div id="gamePage" class="page">
-  <div id="gameHeader">
-    <button class="secondary" onclick="exitGame()">← Back</button>
-    <button onclick="toggleFullscreen()">Fullscreen</button>
-  </div>
+<!-- ========== INSTALLED ========== -->
+<div id="installed" class="page">
+  <header>
+    <button onclick="show('launcher')">← Back</button>
+    <h3>Installed Games</h3>
+  </header>
+  <div id="installedGrid" class="grid"></div>
+</div>
 
-  <div id="gameContainer">
-    <!-- This will be iframe / canvas / Unity later -->
-    <div id="placeholder">Game loads here</div>
+<!-- ========== GAME SCANNER V1 ========== -->
+<div id="scanner" class="page">
+  <header>
+    <button onclick="show('launcher')">← Back</button>
+    <h3>Game Scanner v1</h3>
+  </header>
+  <input id="scanInput" placeholder="Search FPS / Unity / Shooter">
+  <div id="scanResults" class="grid"></div>
+</div>
+
+<!-- ========== GAME PAGE ========== -->
+<div id="gamePage" class="page">
+  <div id="bar">
+    <button onclick="exitGame()">← Exit</button>
+    <button onclick="fullscreen()">Fullscreen</button>
   </div>
+  <div id="gameContainer"></div>
 </div>
 
 <script>
-const launcher = document.getElementById("launcher");
-const gamePage = document.getElementById("gamePage");
-const gameContainer = document.getElementById("gameContainer");
-
-function openGame() {
-  launcher.classList.remove("active");
-  gamePage.classList.add("active");
+/* ===== NAV ===== */
+const pages=["launcher","installed","scanner","gamePage"];
+function show(id){
+  pages.forEach(p=>document.getElementById(p).classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-function exitGame() {
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
-  }
-  gamePage.classList.remove("active");
-  launcher.classList.add("active");
+/* ===== STORAGE ===== */
+let installedGames=JSON.parse(localStorage.getItem("galaxia_games")||"[]");
+
+function save(){localStorage.setItem("galaxia_games",JSON.stringify(installedGames));}
+
+/* ===== INSTALL REAL WEB GAME ===== */
+function installGame(){
+  const input=document.createElement("input");
+  input.type="file";
+  input.webkitdirectory=true;
+  input.onchange=()=>{
+    const files=[...input.files];
+    const entry=files.find(f=>f.name==="index.html");
+    if(!entry)return alert("Folder must contain index.html");
+    const url=URL.createObjectURL(entry);
+    installedGames.push({name:entry.webkitRelativePath.split("/")[0],url});
+    save();
+    renderInstalled();
+    show("installed");
+  };
+  input.click();
 }
 
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    gameContainer.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
+/* ===== INSTALLED ===== */
+function renderInstalled(){
+  const grid=document.getElementById("installedGrid");
+  grid.innerHTML="";
+  installedGames.forEach(g=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=g.name;
+    c.onclick=()=>launch(g.url);
+    grid.appendChild(c);
+  });
 }
+renderInstalled();
+
+/* ===== SCANNER V1 (CURATED REAL GAMES) ===== */
+const catalog=[
+  {name:"Krunker",url:"https://krunker.io"},
+  {name:"Shell Shockers",url:"https://shellshock.io"},
+  {name:"ThreeJS FPS",url:"https://mrdoob.github.io/three.js/examples/games_fps.html"},
+  {name:"Unity FPS Sample",url:"https://unity-webgl-builds.github.io/fps-sample/"}
+];
+
+document.getElementById("scanInput").oninput=e=>{
+  const q=e.target.value.toLowerCase();
+  const res=document.getElementById("scanResults");
+  res.innerHTML="";
+  catalog.filter(g=>g.name.toLowerCase().includes(q)).forEach(g=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=g.name;
+    c.onclick=()=>launch(g.url);
+    res.appendChild(c);
+  });
+};
+
+/* ===== GAME ===== */
+const gameContainer=document.getElementById("gameContainer");
+function launch(url){
+  show("gamePage");
+  gameContainer.innerHTML=`<iframe src="${url}" allow="fullscreen; gamepad"></iframe>`;
+}
+function exitGame(){
+  if(document.fullscreenElement)document.exitFullscreen();
+  gameContainer.innerHTML="";
+  show("launcher");
+}
+function fullscreen(){
+  if(!document.fullscreenElement)gameContainer.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+/* ===== CONTROLLER ===== */
+window.addEventListener("gamepadconnected",e=>{
+  console.log("Controller:",e.gamepad.id);
+});
 </script>
 
 </body>
