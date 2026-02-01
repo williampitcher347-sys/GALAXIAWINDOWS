@@ -1,197 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>GALAXIA Launcher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+/* ---------- BASE ---------- */
 html, body {
   margin: 0;
+  padding: 0;
   height: 100%;
-  background: radial-gradient(circle at top, #1b1f3b, #060611);
-  font-family: Arial, sans-serif;
+  background: #050510;
   color: white;
+  font-family: system-ui, Segoe UI, Arial;
   overflow: hidden;
 }
-header {
-  height: 60px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 0 20px;
-  background: rgba(0,0,0,.7);
-}
-header h1 { margin: 0; }
-input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 15px;
-}
 
-#library {
-  height: calc(100% - 60px);
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  overflow-y: auto;
-}
-
-.card {
-  background: rgba(0,0,0,.6);
-  border-radius: 14px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform .2s;
-}
-.card:hover { transform: scale(1.05); }
-.card img {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-}
-.card div {
-  padding: 10px;
-  text-align: center;
-  font-weight: bold;
-}
-
-#player {
+/* ---------- PAGES ---------- */
+.page {
   display: none;
+  width: 100%;
   height: 100%;
 }
-#bar {
-  height: 50px;
-  background: black;
+
+.page.active {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
 }
-iframe {
-  width: 100%;
-  height: calc(100% - 50px);
-  border: none;
-  background: black;
+
+/* ---------- LAUNCHER ---------- */
+#launcher {
+  flex-direction: column;
+  padding: 30px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-weight: 600;
+}
+
+#gameGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.gameCard {
+  background: linear-gradient(145deg, #151530, #0b0b1a);
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.gameCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+
+.thumb {
+  height: 100px;
+  border-radius: 10px;
+  background: #222;
+  margin-bottom: 10px;
+}
+
+.gameTitle {
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- GAME PAGE ---------- */
+#gamePage {
+  flex-direction: column;
+}
+
+#gameHeader {
+  height: 48px;
+  background: #0b0b18;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 10px;
 }
 
 button {
-  background: #4b7cff;
+  background: #1e90ff;
   border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
   color: white;
-  padding: 7px 12px;
-  border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
 }
 
-#pad {
-  position: fixed;
-  bottom: 10px;
-  right: 14px;
-  background: rgba(0,0,0,.7);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+button.secondary {
+  background: #333;
+}
+
+#gameContainer {
+  flex: 1;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* placeholder */
+#placeholder {
+  opacity: 0.6;
+  font-size: 18px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>🌌 GALAXIA</h1>
-  <input id="search" placeholder="Search FPS games..." oninput="draw()">
-</header>
+<!-- ================= LAUNCHER ================= -->
+<div id="launcher" class="page active">
+  <h1>🌌 GALAXIA Launcher</h1>
 
-<div id="library"></div>
-
-<div id="player">
-  <div id="bar">
-    <span id="title"></span>
-    <div>
-      <button onclick="goFull()">Fullscreen</button>
-      <button onclick="exit()">Exit</button>
+  <div id="gameGrid">
+    <!-- Placeholder card -->
+    <div class="gameCard" onclick="openGame()">
+      <div class="thumb"></div>
+      <div class="gameTitle">Sample Game</div>
     </div>
   </div>
-  <iframe id="frame"></iframe>
 </div>
 
-<div id="pad">🎮 Controller: Not connected</div>
+<!-- ================= GAME PAGE ================= -->
+<div id="gamePage" class="page">
+  <div id="gameHeader">
+    <button class="secondary" onclick="exitGame()">← Back</button>
+    <button onclick="toggleFullscreen()">Fullscreen</button>
+  </div>
+
+  <div id="gameContainer">
+    <!-- This will be iframe / canvas / Unity later -->
+    <div id="placeholder">Game loads here</div>
+  </div>
+</div>
 
 <script>
-const games = [
-  {
-    name: "BananaBread (FPS)",
-    url: "https://gamearians.github.io/games/bananabread/",
-    img: "https://i.imgur.com/q5M0TjP.jpg"
-  },
-  {
-    name: "Red Eclipse 2",
-    url: "https://redeclipse.net/play/",
-    img: "https://i.imgur.com/ZmXKJzX.jpg"
-  },
-  {
-    name: "Xonotic Web",
-    url: "https://xonotic.org/download/",
-    img: "https://i.imgur.com/Dl2qL8s.jpg"
-  },
-  {
-    name: "Cube 2 Sauerbraten",
-    url: "https://sauerbraten.org/",
-    img: "https://i.imgur.com/fYzZKZP.jpg"
-  },
-  {
-    name: "Plasma Forks",
-    url: "https://astronoit.github.io/FPS-GAME/",
-    img: "https://i.imgur.com/1hZcJgD.jpg"
-  },
-  {
-    name: "FPS Reflex",
-    url: "https://yagizayer.github.io/Fps_Reflex_Game_v03/",
-    img: "https://i.imgur.com/5v2R9JX.jpg"
+const launcher = document.getElementById("launcher");
+const gamePage = document.getElementById("gamePage");
+const gameContainer = document.getElementById("gameContainer");
+
+function openGame() {
+  launcher.classList.remove("active");
+  gamePage.classList.add("active");
+}
+
+function exitGame() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
   }
-];
-
-function draw() {
-  library.innerHTML = "";
-  const q = search.value.toLowerCase();
-  games.filter(g => g.name.toLowerCase().includes(q)).forEach(g => {
-    const c = document.createElement("div");
-    c.className = "card";
-    c.innerHTML = `<img src="${g.img}"><div>${g.name}</div>`;
-    c.onclick = () => play(g);
-    library.appendChild(c);
-  });
-}
-draw();
-
-function play(g) {
-  library.style.display = "none";
-  player.style.display = "block";
-  title.textContent = g.name;
-  frame.src = g.url;
+  gamePage.classList.remove("active");
+  launcher.classList.add("active");
 }
 
-function exit() {
-  frame.src = "";
-  player.style.display = "none";
-  library.style.display = "grid";
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    gameContainer.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
 }
-
-function goFull() {
-  frame.requestFullscreen?.();
-}
-
-function pads() {
-  const gp = navigator.getGamepads();
-  pad.textContent = [...gp].some(p => p)
-    ? "🎮 Controller connected"
-    : "🎮 Controller not connected";
-  requestAnimationFrame(pads);
-}
-pads();
 </script>
 
 </body>
