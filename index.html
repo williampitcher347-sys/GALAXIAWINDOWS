@@ -5,42 +5,35 @@
 <title>GALAXIA LAUNCHER</title>
 
 <style>
-* { box-sizing: border-box; }
-
 html, body {
   margin: 0;
   height: 100%;
-  font-family: Segoe UI, sans-serif;
   background: radial-gradient(circle at top, #0b0f2b, #000);
   color: white;
+  font-family: Segoe UI, sans-serif;
 }
 
-/* HEADER */
 header {
   padding: 20px;
   font-size: 28px;
   font-weight: bold;
-  letter-spacing: 2px;
 }
 
-/* MAIN */
 #main {
   padding: 20px;
 }
 
-/* GAME GRID */
 #games {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .game {
   background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
-  transition: 0.25s;
+  border-radius: 16px;
+  padding: 14px;
+  transition: 0.2s;
 }
 
 .game:hover {
@@ -50,43 +43,24 @@ header {
 
 .game img {
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .game-title {
   margin-top: 10px;
   font-size: 16px;
-  text-align: center;
-}
-
-/* PLAYER */
-#player {
-  position: fixed;
-  inset: 0;
-  background: black;
-  display: none;
-  flex-direction: column;
-}
-
-#player iframe {
-  flex: 1;
-  border: none;
-}
-
-#playerBar {
-  height: 50px;
-  background: rgba(0,0,0,0.9);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
 }
 
 button {
-  padding: 8px 14px;
-  border-radius: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
+  background: #4b7cff;
+  color: white;
+  font-size: 14px;
 }
 </style>
 </head>
@@ -96,52 +70,38 @@ button {
 <header>🌌 GALAXIA LAUNCHER</header>
 
 <div id="main">
-  <h2>Play Now</h2>
+  <h2>Library</h2>
 
   <div id="games">
 
-    <!-- FORTNITE -->
-    <div class="game" onclick="launch('fortnite')">
+    <div class="game">
       <img src="https://cdn2.unrealengine.com/fortnite-icon-512x512-0a3c4a8f6b6c.png">
       <div class="game-title">Fortnite (Cloud)</div>
+      <button onclick="launchFortnite()">Launch</button>
     </div>
 
-    <!-- RETRO CLOUD -->
-    <div class="game" onclick="launch('retro')">
+    <div class="game">
       <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Gamepad.svg">
-      <div class="game-title">Retro Cloud</div>
+      <div class="game-title">Retro Cloud Games</div>
+      <button onclick="launchRetro()">Launch</button>
     </div>
 
   </div>
-</div>
-
-<!-- PLAYER -->
-<div id="player">
-  <div id="playerBar">
-    <div id="nowPlaying">Launching…</div>
-    <button onclick="exitGame()">Exit</button>
-  </div>
-  <iframe id="frame"></iframe>
 </div>
 
 <script>
-function launch(game) {
-  player.style.display = "flex";
-
-  if (game === "fortnite") {
-    nowPlaying.textContent = "Fortnite (Xbox Cloud)";
-    frame.src = "https://www.xbox.com/play/embed/fortnite";
-  }
-
-  if (game === "retro") {
-    nowPlaying.textContent = "Retro Cloud Game";
-    frame.src = "https://www.retrogames.cc/embed/16898-super-mario-world-usa.html";
-  }
+function launchFortnite() {
+  window.open(
+    "https://www.xbox.com/play",
+    "_blank"
+  );
 }
 
-function exitGame() {
-  frame.src = "";
-  player.style.display = "none";
+function launchRetro() {
+  window.open(
+    "https://www.retrogames.cc/",
+    "_blank"
+  );
 }
 </script>
 
