@@ -3,139 +3,128 @@
 <head>
 <meta charset="UTF-8">
 <title>GALAXIA FPS LAUNCHER</title>
-
 <style>
-* { box-sizing: border-box; }
-
 html, body {
   margin: 0;
   height: 100%;
   font-family: Segoe UI, sans-serif;
-  background: radial-gradient(circle at top, #0b0f2b, #000);
+  background: #0a0f2f;
   color: white;
   overflow: hidden;
 }
-
-/* HEADER */
 header {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  background: rgba(0,0,0,0.4);
+  padding: 18px;
+  font-size: 28px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
 }
-
-/* MAIN LAYOUT */
 #container {
   display: flex;
-  height: calc(100% - 64px);
+  height: calc(100% - 60px);
 }
-
-/* SIDEBAR */
 #sidebar {
-  width: 260px;
-  background: rgba(0,0,0,0.55);
-  padding: 16px;
+  width: 280px;
+  background: rgba(0,0,0,0.65);
+  padding: 12px;
+  flex-shrink: 0;
 }
-
 .game-btn {
-  background: rgba(255,255,255,0.08);
+  background: #111;
   padding: 14px;
-  margin-bottom: 12px;
-  border-radius: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
   cursor: pointer;
+  text-align: center;
   transition: 0.2s;
 }
-
 .game-btn:hover {
-  background: rgba(255,255,255,0.2);
+  background: #222;
   transform: translateX(4px);
 }
-
-/* PLAYER */
 #player {
   flex: 1;
   background: black;
   position: relative;
 }
-
 #player iframe {
   width: 100%;
   height: 100%;
   border: none;
 }
-
-/* TOP BAR */
 #playerBar {
   position: absolute;
   top: 0;
   width: 100%;
-  height: 44px;
-  background: rgba(0,0,0,0.8);
+  height: 48px;
+  background: rgba(0,0,0,0.9);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 12px;
   z-index: 10;
 }
-
 button {
   background: #4b7cff;
-  color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
+  color: white;
 }
 </style>
 </head>
-
 <body>
 
-<header>🌌 GALAXIA — FPS LAUNCHER</header>
+<header>🌌 GALAXIA FPS LAUNCHER</header>
 
 <div id="container">
-
   <div id="sidebar">
     <div class="game-btn" onclick="launch('krunker')">Krunker.io</div>
     <div class="game-btn" onclick="launch('warbrokers')">War Brokers</div>
     <div class="game-btn" onclick="launch('miniroyale')">Mini Royale</div>
+    <div class="game-btn" onclick="launch('plasma')">Plasma Forks</div>
+    <div class="game-btn" onclick="launch('bananabread')">BananaBread</div>
+    <div class="game-btn" onclick="launch('fpsreflex')">FPS Reflex Game</div>
   </div>
 
   <div id="player">
     <div id="playerBar">
-      <div id="nowPlaying">Select a game</div>
-      <button onclick="stopGame()">Exit</button>
+      <div id="nowPlaying">Select an FPS to play</div>
+      <button onclick="exitGame()">Exit</button>
     </div>
     <iframe id="gameFrame"></iframe>
   </div>
-
 </div>
 
 <script>
-function launch(game) {
-  if (game === "krunker") {
-    nowPlaying.textContent = "Krunker.io";
-    gameFrame.src = "https://krunker.io/";
+function launch(id) {
+  let url = "";
+  if (id === "krunker") {
+    url = "https://krunker.io/";
+  }
+  if (id === "warbrokers") {
+    url = "https://warbrokers.io/game/";
+  }
+  if (id === "miniroyale") {
+    url = "https://miniroyale.io/";
+  }
+  if (id === "plasma") {
+    url = "https://astronoit.github.io/FPS-GAME/";  
+  }
+  if (id === "bananabread") {
+    url = "https://gamearians.github.io/games/bananabread/";
+  }
+  if (id === "fpsreflex") {
+    url = "https://yagizayer.github.io/Fps_Reflex_Game_v03/";
   }
 
-  if (game === "warbrokers") {
-    nowPlaying.textContent = "War Brokers";
-    gameFrame.src = "https://warbrokers.io/game/";
-  }
-
-  if (game === "miniroyale") {
-    nowPlaying.textContent = "Mini Royale: Nations";
-    gameFrame.src = "https://miniroyale.io/";
-  }
+  nowPlaying.textContent = id.replace(/([A-Z])/g, " $1").trim();
+  gameFrame.src = url;
 }
 
-function stopGame() {
+function exitGame() {
   gameFrame.src = "";
-  nowPlaying.textContent = "Select a game";
+  nowPlaying.textContent = "Select an FPS to play";
 }
 </script>
 
