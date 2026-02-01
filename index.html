@@ -5,107 +5,91 @@
 <title>GALAXIA Launcher</title>
 
 <style>
-* { box-sizing: border-box; }
 html, body {
   margin: 0;
   height: 100%;
-  font-family: "Segoe UI", sans-serif;
-  background: radial-gradient(circle at top, #1b1f3b, #05060f);
+  background: radial-gradient(circle at top, #1b1f3b, #060611);
+  font-family: Arial, sans-serif;
   color: white;
   overflow: hidden;
 }
-
-/* ---------- TOP BAR ---------- */
 header {
-  height: 64px;
+  height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  background: rgba(0,0,0,.6);
   gap: 20px;
+  padding: 0 20px;
+  background: rgba(0,0,0,.7);
 }
-header h1 {
-  margin: 0;
-  font-size: 24px;
-}
-#search {
+header h1 { margin: 0; }
+input {
   flex: 1;
   padding: 10px;
   border-radius: 8px;
   border: none;
-  outline: none;
   font-size: 15px;
 }
 
-/* ---------- LIBRARY ---------- */
 #library {
+  height: calc(100% - 60px);
   padding: 20px;
-  height: calc(100% - 64px);
-  overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
+  overflow-y: auto;
 }
 
-.game-card {
+.card {
   background: rgba(0,0,0,.6);
   border-radius: 14px;
-  overflow: hidden;
   cursor: pointer;
-  transition: transform .2s, box-shadow .2s;
+  overflow: hidden;
+  transition: transform .2s;
 }
-.game-card:hover {
-  transform: scale(1.04);
-  box-shadow: 0 0 25px rgba(90,120,255,.5);
-}
-.game-card img {
+.card:hover { transform: scale(1.05); }
+.card img {
   width: 100%;
   height: 140px;
   object-fit: cover;
 }
-.game-card div {
-  padding: 12px;
-  font-weight: bold;
+.card div {
+  padding: 10px;
   text-align: center;
+  font-weight: bold;
 }
 
-/* ---------- PLAYER PAGE ---------- */
-#playerPage {
+#player {
   display: none;
   height: 100%;
-  width: 100%;
 }
-#playerBar {
-  height: 52px;
-  background: rgba(0,0,0,.85);
+#bar {
+  height: 50px;
+  background: black;
   display: flex;
-  align-items: center;
-  padding: 0 14px;
   justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
 }
-#playerBar span {
-  font-weight: bold;
-}
-#playerBar button {
-  background: #4b7cff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
-#gameFrame {
+iframe {
   width: 100%;
-  height: calc(100% - 52px);
+  height: calc(100% - 50px);
   border: none;
   background: black;
 }
 
-/* ---------- CONTROLLER HUD ---------- */
-#controllerStatus {
+button {
+  background: #4b7cff;
+  border: none;
+  color: white;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#pad {
   position: fixed;
-  bottom: 12px;
-  right: 16px;
+  bottom: 10px;
+  right: 14px;
   background: rgba(0,0,0,.7);
   padding: 8px 12px;
   border-radius: 8px;
@@ -118,43 +102,45 @@ header h1 {
 
 <header>
   <h1>🌌 GALAXIA</h1>
-  <input id="search" placeholder="Search games..." oninput="renderGames()">
+  <input id="search" placeholder="Search FPS games..." oninput="draw()">
 </header>
 
-<!-- LIBRARY -->
 <div id="library"></div>
 
-<!-- PLAYER -->
-<div id="playerPage">
-  <div id="playerBar">
-    <span id="nowPlaying">Playing</span>
+<div id="player">
+  <div id="bar">
+    <span id="title"></span>
     <div>
-      <button onclick="requestFullscreen()">Fullscreen</button>
-      <button onclick="exitGame()">Exit</button>
+      <button onclick="goFull()">Fullscreen</button>
+      <button onclick="exit()">Exit</button>
     </div>
   </div>
-  <iframe id="gameFrame"></iframe>
+  <iframe id="frame"></iframe>
 </div>
 
-<div id="controllerStatus">🎮 Controller: Not connected</div>
+<div id="pad">🎮 Controller: Not connected</div>
 
 <script>
-/* ---------- GAME LIST ---------- */
 const games = [
   {
-    name: "Krunker.io",
-    url: "https://krunker.io/",
-    img: "https://i.imgur.com/Mb5WZ5P.jpg"
+    name: "BananaBread (FPS)",
+    url: "https://gamearians.github.io/games/bananabread/",
+    img: "https://i.imgur.com/q5M0TjP.jpg"
   },
   {
-    name: "War Brokers",
-    url: "https://warbrokers.io/game/",
-    img: "https://i.imgur.com/1G4nM1Q.jpg"
+    name: "Red Eclipse 2",
+    url: "https://redeclipse.net/play/",
+    img: "https://i.imgur.com/ZmXKJzX.jpg"
   },
   {
-    name: "Mini Royale",
-    url: "https://miniroyale.io/",
-    img: "https://i.imgur.com/Zn6F8yJ.jpg"
+    name: "Xonotic Web",
+    url: "https://xonotic.org/download/",
+    img: "https://i.imgur.com/Dl2qL8s.jpg"
+  },
+  {
+    name: "Cube 2 Sauerbraten",
+    url: "https://sauerbraten.org/",
+    img: "https://i.imgur.com/fYzZKZP.jpg"
   },
   {
     name: "Plasma Forks",
@@ -162,81 +148,50 @@ const games = [
     img: "https://i.imgur.com/1hZcJgD.jpg"
   },
   {
-    name: "BananaBread",
-    url: "https://gamearians.github.io/games/bananabread/",
-    img: "https://i.imgur.com/q5M0TjP.jpg"
-  },
-  {
-    name: "Shell Shockers",
-    url: "https://shellshockers.io/",
-    img: "https://i.imgur.com/b8GZQqE.jpg"
-  },
-  {
     name: "FPS Reflex",
     url: "https://yagizayer.github.io/Fps_Reflex_Game_v03/",
     img: "https://i.imgur.com/5v2R9JX.jpg"
-  },
-  {
-    name: "AssaultCube",
-    url: "https://gamearians.github.io/games/AssaultCube/",
-    img: "https://i.imgur.com/QGZC3KM.jpg"
-  },
-  {
-    name: "Tank Trouble 2",
-    url: "https://github.io-games.gitlab.io/tank-trouble-2/",
-    img: "https://i.imgur.com/efh5L9E.jpg"
-  },
-  {
-    name: "Build Royale",
-    url: "https://cpsgames.org/game/build-royale",
-    img: "https://i.imgur.com/zxJ8RZp.jpg"
   }
 ];
 
-/* ---------- RENDER ---------- */
-function renderGames() {
-  const q = search.value.toLowerCase();
+function draw() {
   library.innerHTML = "";
-  games.filter(g => g.name.toLowerCase().includes(q)).forEach(game => {
-    const card = document.createElement("div");
-    card.className = "game-card";
-    card.innerHTML = `<img src="${game.img}"><div>${game.name}</div>`;
-    card.onclick = () => launchGame(game);
-    library.appendChild(card);
+  const q = search.value.toLowerCase();
+  games.filter(g => g.name.toLowerCase().includes(q)).forEach(g => {
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `<img src="${g.img}"><div>${g.name}</div>`;
+    c.onclick = () => play(g);
+    library.appendChild(c);
   });
 }
-renderGames();
+draw();
 
-/* ---------- LAUNCH / EXIT ---------- */
-function launchGame(game) {
+function play(g) {
   library.style.display = "none";
-  playerPage.style.display = "block";
-  nowPlaying.textContent = game.name;
-  gameFrame.src = game.url;
+  player.style.display = "block";
+  title.textContent = g.name;
+  frame.src = g.url;
 }
 
-function exitGame() {
-  gameFrame.src = "";
-  playerPage.style.display = "none";
+function exit() {
+  frame.src = "";
+  player.style.display = "none";
   library.style.display = "grid";
 }
 
-/* ---------- FULLSCREEN + POINTER ---------- */
-function requestFullscreen() {
-  gameFrame.requestFullscreen?.();
-  gameFrame.contentWindow?.focus();
+function goFull() {
+  frame.requestFullscreen?.();
 }
 
-/* ---------- CONTROLLER SUPPORT ---------- */
-function updateGamepad() {
-  const pads = navigator.getGamepads();
-  const connected = [...pads].some(p => p);
-  controllerStatus.textContent = connected
+function pads() {
+  const gp = navigator.getGamepads();
+  pad.textContent = [...gp].some(p => p)
     ? "🎮 Controller connected"
     : "🎮 Controller not connected";
-  requestAnimationFrame(updateGamepad);
+  requestAnimationFrame(pads);
 }
-updateGamepad();
+pads();
 </script>
 
 </body>
