@@ -2,138 +2,145 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Web Cloud Launcher</title>
+<title>GALAXIA LAUNCHER</title>
 
 <style>
+* { box-sizing: border-box; }
+
 html, body {
   margin: 0;
   height: 100%;
-  background: radial-gradient(circle at top, #1b1f3b, #000);
-  color: white;
   font-family: Segoe UI, sans-serif;
-  overflow: hidden;
+  background: radial-gradient(circle at top, #0b0f2b, #000);
+  color: white;
 }
 
-/* DESKTOP */
-#desktop {
-  height: 100%;
+/* HEADER */
+header {
   padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 2px;
 }
 
-/* TASKBAR */
-#taskbar {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 48px;
-  background: rgba(0,0,0,.85);
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-}
-
-/* LAUNCHER WINDOW */
-#launcher {
-  width: 900px;
-  height: 500px;
-  background: rgba(20,20,40,.95);
-  border-radius: 12px;
-  padding: 16px;
+/* MAIN */
+#main {
+  padding: 20px;
 }
 
 /* GAME GRID */
 #games {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 160px);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
 }
 
 .game {
-  background: rgba(255,255,255,.08);
-  border-radius: 10px;
-  padding: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 12px;
   cursor: pointer;
-  text-align: center;
-  transition: .2s;
+  transition: 0.25s;
 }
 
 .game:hover {
-  background: rgba(255,255,255,.18);
+  background: rgba(255,255,255,0.18);
+  transform: translateY(-4px);
 }
 
 .game img {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
-/* PLAYER WINDOW */
+.game-title {
+  margin-top: 10px;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* PLAYER */
 #player {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: black;
   display: none;
+  flex-direction: column;
 }
 
 #player iframe {
-  width: 100%;
-  height: 100%;
+  flex: 1;
   border: none;
 }
 
-#closeBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
-  padding: 8px 12px;
+#playerBar {
+  height: 50px;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div id="desktop">
-  <div id="launcher">
-    <h2>Cloud Game Launcher</h2>
+<header>🌌 GALAXIA LAUNCHER</header>
 
-    <div id="games">
-      <div class="game" onclick="launchGame('fortnite')">
-        <img src="https://cdn2.unrealengine.com/fortnite-icon-512x512-0a3c4a8f6b6c.png">
-        <div>Fortnite (Cloud)</div>
-      </div>
+<div id="main">
+  <h2>Play Now</h2>
 
-      <div class="game" onclick="launchGame('emulator')">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Gamepad.svg">
-        <div>Retro Cloud</div>
-      </div>
+  <div id="games">
+
+    <!-- FORTNITE -->
+    <div class="game" onclick="launch('fortnite')">
+      <img src="https://cdn2.unrealengine.com/fortnite-icon-512x512-0a3c4a8f6b6c.png">
+      <div class="game-title">Fortnite (Cloud)</div>
     </div>
+
+    <!-- RETRO CLOUD -->
+    <div class="game" onclick="launch('retro')">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/3/38/Gamepad.svg">
+      <div class="game-title">Retro Cloud</div>
+    </div>
+
   </div>
 </div>
 
+<!-- PLAYER -->
 <div id="player">
-  <button id="closeBtn" onclick="closePlayer()">Exit Game</button>
-  <iframe id="gameFrame"></iframe>
+  <div id="playerBar">
+    <div id="nowPlaying">Launching…</div>
+    <button onclick="exitGame()">Exit</button>
+  </div>
+  <iframe id="frame"></iframe>
 </div>
 
-<div id="taskbar">Web Cloud OS</div>
-
 <script>
-function launchGame(type) {
-  player.style.display = "block";
+function launch(game) {
+  player.style.display = "flex";
 
-  if (type === "fortnite") {
-    // Fortnite is the ONLY Xbox Cloud game that works publicly
-    gameFrame.src = "https://www.xbox.com/play/embed/fortnite";
+  if (game === "fortnite") {
+    nowPlaying.textContent = "Fortnite (Xbox Cloud)";
+    frame.src = "https://www.xbox.com/play/embed/fortnite";
   }
 
-  if (type === "emulator") {
-    // Example cloud-playable platform
-    gameFrame.src = "https://www.retrogames.cc/embed/16898-super-mario-world-usa.html";
+  if (game === "retro") {
+    nowPlaying.textContent = "Retro Cloud Game";
+    frame.src = "https://www.retrogames.cc/embed/16898-super-mario-world-usa.html";
   }
 }
 
-function closePlayer() {
-  gameFrame.src = "";
+function exitGame() {
+  frame.src = "";
   player.style.display = "none";
 }
 </script>
