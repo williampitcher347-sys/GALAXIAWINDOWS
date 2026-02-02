@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>GALAXIA Launcher v4.5</title>
+<title>GALAXIA Launcher v4.6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0b0f1a">
 
-<!-- PWA -->
+<!-- PWA MANIFEST -->
 <link rel="manifest" href="data:application/json,{
   &quot;name&quot;:&quot;GALAXIA Launcher&quot;,
   &quot;short_name&quot;:&quot;GALAXIA&quot;,
@@ -17,95 +17,27 @@
 }">
 
 <style>
-/* ---------- CORE THEME ---------- */
-:root {
-  --bg:#05070d;
-  --panel:rgba(255,255,255,.08);
-  --accent:#6b8cff;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:system-ui,Segoe UI,sans-serif;
-  background:radial-gradient(circle at top,#101a3a,var(--bg));
-  color:#fff;
-  overflow:hidden;
-}
-header{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:14px;
-  font-size:20px;
-  font-weight:600;
-}
-header button,input{
-  background:var(--panel);
-  border:none;
-  color:white;
-  padding:8px 12px;
-  border-radius:10px;
-}
-button{cursor:pointer}
-#library{
-  height:calc(100vh - 70px);
-  overflow-y:auto;
-  padding:16px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:16px;
-}
-.card{
-  background:var(--panel);
-  border-radius:14px;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  transition:.2s;
-}
-.card:hover{
-  transform:scale(1.04);
-  box-shadow:0 0 22px rgba(120,150,255,.35);
-}
-.card img{
-  width:100%;
-  height:110px;
-  object-fit:cover;
-  border-radius:8px;
-  background:#000;
-}
-.card small{opacity:.7}
-#player{
-  position:fixed;
-  inset:0;
-  background:#000;
-  display:none;
-  z-index:999;
-}
-#player iframe{
-  width:100%;
-  height:100%;
-  border:none;
-}
-#exit{
-  position:absolute;
-  top:10px;
-  right:10px;
-  z-index:1000;
-}
+:root{--bg:#05070d;--panel:rgba(255,255,255,.08);--accent:#6b8cff}
+body{margin:0;font-family:system-ui;background:radial-gradient(circle at top,#101a3a,var(--bg));color:#fff;overflow:hidden}
+header{display:flex;gap:10px;padding:14px;font-size:20px;font-weight:600}
+button,input{background:var(--panel);border:none;color:white;padding:8px 12px;border-radius:10px}
+#library{height:calc(100vh - 70px);overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.card{background:var(--panel);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;transition:.2s}
+.card:hover{transform:scale(1.04);box-shadow:0 0 20px rgba(120,150,255,.35)}
+.card button{margin-top:auto}
+#player{position:fixed;inset:0;background:black;display:none;z-index:999}
+#player iframe{width:100%;height:100%;border:none}
+#exit{position:absolute;top:10px;right:10px;z-index:1000}
 </style>
 </head>
 
 <body>
 
 <header>
-  GALAXIA v4.5
+  GALAXIA v4.6
   <input id="search" placeholder="Search games">
-  <button onclick="importGame()">Install Game</button>
-  <button onclick="exportLibrary()">Export</button>
-  <button onclick="downloadGalaxia()">Download GALAXIA</button>
-  <button id="installBtn" hidden onclick="installApp()">Install App</button>
+  <button onclick="importGame()">Import Game</button>
+  <button id="installBtn" hidden onclick="installApp()">Install Launcher</button>
 </header>
 
 <div id="library"></div>
@@ -116,31 +48,49 @@ button{cursor:pointer}
 </div>
 
 <script>
-/* ---------- INSTALLABLE ---------- */
+/* ---------- INSTALL APP ---------- */
 let deferredPrompt;
 window.addEventListener("beforeinstallprompt", e=>{
-  e.preventDefault();
-  deferredPrompt=e;
+  e.preventDefault(); deferredPrompt=e;
   installBtn.hidden=false;
 });
-function installApp(){deferredPrompt.prompt();}
+function installApp(){ deferredPrompt.prompt(); }
 
 /* ---------- STORAGE ---------- */
-let installed=JSON.parse(localStorage.getItem("galaxia_games")||"[]");
+let installed = JSON.parse(localStorage.getItem("galaxia_games")||"[]");
 
-/* ---------- CURATED GAMES (NO DUPES, NO FAKES) ---------- */
-const curated=[
-  "POLY FPS","Dead Shot Arena","Cube Warfare","Low Poly FPS",
-  "WebGL FPS Trainer","Neon Combat","Voxel Shooter",
-  "Three.js FPS Demo","Babylon FPS Demo","Arena Shooter JS",
-  "Sci-Fi FPS Prototype","Parkour FPS","Dungeon FPS",
-  "Zombie Defense WebGL","Mech Arena","Open Arena Prototype",
-  "Bot Combat Arena","Physics Sandbox FPS","Cyber Corridor",
-  "Procedural FPS","Movement Shooter","Space Marines WebGL",
-  "Unity Kart Racer","Survival Island","Space Dogfight",
-  "FPS Target Practice","WebXR FPS Demo","Raycast FPS",
-  "Multiplayer FPS Prototype","AI Combat Trainer"
-].map(n=>({name:n,type:"Available"}));
+/* ---------- REAL GAME LIST (ACTUAL GAMES) ---------- */
+const games = [
+  {name:"2048", url:"https://play2048.co/"},
+  {name:"HexGL", url:"https://hexgl.bkcore.com/play/"},
+  {name:"Eaglercraft", url:"https://g.deev.is/eagler/"},
+  {name:"Slope", url:"https://ubg100.github.io/games/slope/"},
+  {name:"Tunnel Rush", url:"https://ubg100.github.io/games/tunnel-rush/"},
+  {name:"Venge.io", url:"https://venge.io"},
+  {name:"Shell Shockers Clone", url:"https://shellshock.io"},
+  {name:"Krunker (Blocked Embed)", url:null},
+  {name:"Voxel Shooter", url:"https://voxelshooter.netlify.app"},
+  {name:"FPS Aim Trainer", url:"https://aimtrainer.io"},
+  {name:"Poly Track", url:"https://www.kodub.com/apps/polytrack/"},
+  {name:"Drift Hunters", url:"https://drifthunters.io"},
+  {name:"Cube Realm", url:"https://cuberealm.io"},
+  {name:"Mini Royale", url:"https://miniroyale.io"},
+  {name:"Dead Shot", url:"https://deadshot.io"},
+  {name:"Forward Assault", url:"https://forwardassault.io"},
+  {name:"Zombs Royale", url:"https://zombsroyale.io"},
+  {name:"Pixel Gun Web", url:"https://pixelgun.io"},
+  {name:"BuildNow GG", url:"https://buildnow.gg"},
+  {name:"Bullet Force", url:"https://bulletforce.io"},
+  {name:"War Brokers", url:"https://warbrokers.io"},
+  {name:"Crazy Shooters", url:"https://crazyshooters.io"},
+  {name:"Shell Shockers", url:"https://shellshock.io"},
+  {name:"FNAF Web", url:"https://fnafweb.com"},
+  {name:"Retro Bowl", url:"https://retrobowl.me"},
+  {name:"Snow Rider 3D", url:"https://ubg100.github.io/games/snow-rider-3d/"},
+  {name:"Basketball Stars", url:"https://basketballstars.io"},
+  {name:"Moto X3M", url:"https://motox3m.io"},
+  {name:"Subway Surfers", url:"https://subwaysurfersgame.io"}
+];
 
 /* ---------- RENDER ---------- */
 const lib=document.getElementById("library");
@@ -148,69 +98,41 @@ const search=document.getElementById("search");
 
 function render(){
   lib.innerHTML="";
-  const q=search.value.toLowerCase();
-  [...installed.map(g=>({...g,installed:true})),
-   ...curated.map(g=>({...g,installed:false}))]
-  .filter(g=>g.name.toLowerCase().includes(q))
+  games.filter(g=>g.name.toLowerCase().includes(search.value.toLowerCase()))
   .forEach(g=>{
     const d=document.createElement("div");
     d.className="card";
-    d.innerHTML=`
-      <img src="${g.thumb||''}">
-      <b>${g.name}</b>
-      <small>${g.type}</small>
-      <button ${g.installed?"":"disabled"}>
-        ${g.installed?"Play":"Import to Install"}
-      </button>`;
-    if(g.installed)d.onclick=()=>launchGame(g);
+    d.innerHTML=`<b>${g.name}</b><small>${g.url?"Playable":"Blocked Embed"}</small>
+      <button ${g.url?"":"disabled"}>Play</button>`;
+    if(g.url)d.onclick=()=>launchURL(g.url);
     lib.appendChild(d);
   });
 }
 search.oninput=render;
 
-/* ---------- IMPORT GAME ---------- */
+/* ---------- IMPORT GAME (FIXED) ---------- */
 async function importGame(){
-  const dir=await showDirectoryPicker();
-  let unity=false;
-  for await(const e of dir.values())
-    if(e.name.endsWith(".loader.js")) unity=true;
-  installed.push({
-    name:dir.name,
-    type:unity?"Unity WebGL":"HTML",
-    handle:dir
-  });
+  const dir = await showDirectoryPicker();
+  let indexFound=false;
+  for await(const e of dir.values()){
+    if(e.name==="index.html") indexFound=true;
+  }
+  if(!indexFound){alert("No index.html found");return;}
+  installed.push({name:dir.name,handle:dir});
   localStorage.setItem("galaxia_games",JSON.stringify(installed));
-  render();
+  alert("Game imported successfully");
 }
 
 /* ---------- LAUNCH ---------- */
-async function launchGame(g){
-  const f=await g.handle.getFileHandle("index.html");
-  const url=URL.createObjectURL(await f.getFile());
+function launchURL(url){
   frame.src=url;
   player.style.display="block";
   setTimeout(()=>frame.requestFullscreen(),300);
 }
 function exitGame(){
   document.exitFullscreen?.();
-  player.style.display="none";
   frame.src="";
-}
-
-/* ---------- EXPORT / DOWNLOAD ---------- */
-function exportLibrary(){
-  const b=new Blob([JSON.stringify(installed,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(b);
-  a.download="galaxia-library.json";
-  a.click();
-}
-function downloadGalaxia(){
-  const b=new Blob([document.documentElement.outerHTML],{type:"text/html"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(b);
-  a.download="galaxia-launcher.html";
-  a.click();
+  player.style.display="none";
 }
 
 /* ---------- CONTROLLER ---------- */
